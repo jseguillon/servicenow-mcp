@@ -7,6 +7,7 @@ from servicenow_mcp.utils.config import (
     AuthConfig,
     AuthType,
     BasicAuthConfig,
+    BearerAuthConfig,
     OAuthConfig,
     ServerConfig,
 )
@@ -17,6 +18,7 @@ def test_auth_type_enum():
     assert AuthType.BASIC == "basic"
     assert AuthType.OAUTH == "oauth"
     assert AuthType.API_KEY == "api_key"
+    assert AuthType.BEARER == "bearer"
 
 
 def test_basic_auth_config():
@@ -60,6 +62,16 @@ def test_api_key_config():
     assert config.header_name == "Custom-Header"
 
 
+def test_bearer_auth_config():
+    """Test the BearerAuthConfig class."""
+    config = BearerAuthConfig(token="token")
+    assert config.token == "token"
+    assert config.scheme == "Bearer"
+
+    config = BearerAuthConfig(token="token", scheme="JWT")
+    assert config.scheme == "JWT"
+
+
 def test_auth_config():
     """Test the AuthConfig class."""
     # Basic auth
@@ -89,6 +101,7 @@ def test_auth_config():
     assert config.oauth.client_id == "client_id"
     assert config.basic is None
     assert config.api_key is None
+    assert config.bearer is None
     
     # API key
     config = AuthConfig(
@@ -100,6 +113,19 @@ def test_auth_config():
     assert config.api_key.api_key == "api_key"
     assert config.basic is None
     assert config.oauth is None
+    assert config.bearer is None
+
+    # Bearer
+    config = AuthConfig(
+        type=AuthType.BEARER,
+        bearer=BearerAuthConfig(token="token"),
+    )
+    assert config.type == AuthType.BEARER
+    assert config.bearer is not None
+    assert config.bearer.token == "token"
+    assert config.basic is None
+    assert config.oauth is None
+    assert config.api_key is None
 
 
 def test_server_config():
