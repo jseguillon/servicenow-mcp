@@ -56,7 +56,7 @@ def parse_args():
     auth_group = parser.add_argument_group("Authentication")
     auth_group.add_argument(
         "--auth-type",
-        choices=["basic", "oauth", "api_key"],
+        choices=["basic", "oauth", "api_key", "bearer"],
         help="Authentication type",
         default=os.environ.get("SERVICENOW_AUTH_TYPE", "basic"),
     )
@@ -207,6 +207,9 @@ def create_config(args) -> ServerConfig:
         )
         # Create the main AuthConfig wrapper
         final_auth_config = AuthConfig(type=auth_type, api_key=api_key_cfg)
+
+    elif auth_type == AuthType.BEARER:
+        final_auth_config = AuthConfig(type=auth_type)
     else:
         # Should not happen if choices are enforced by argparse
         raise ValueError(f"Unsupported authentication type: {args.auth_type}")

@@ -50,7 +50,7 @@ This project implements an MCP server that enables Claude to connect to ServiceN
    SERVICENOW_INSTANCE_URL=https://your-instance.service-now.com
    SERVICENOW_USERNAME=your-username
    SERVICENOW_PASSWORD=your-password
-   SERVICENOW_AUTH_TYPE=basic  # or oauth, api_key
+   SERVICENOW_AUTH_TYPE=basic  # or oauth, api_key, bearer
    ```
 
 ## Usage
@@ -596,6 +596,18 @@ SERVICENOW_TOKEN_URL=https://your-instance.service-now.com/oauth_token.do
 SERVICENOW_AUTH_TYPE=api_key
 SERVICENOW_API_KEY=your-api-key
 ```
+
+### Bearer Authentication
+
+Use this when an upstream gateway such as Apigee sends an `Authorization` header on the incoming MCP HTTP request and you want the server to forward that same header to ServiceNow on REST API calls.
+
+```
+SERVICENOW_AUTH_TYPE=bearer
+```
+
+In this mode, the server does **not** read a bearer token from environment variables. Instead, it forwards the `Authorization` header received on the MCP SSE/message request. If no incoming header is present, bearer-authenticated tool calls fail.
+
+> Note: `run_background_script` still requires basic authentication because it performs an interactive UI login flow against `login.do`.
 
 ## Development
 

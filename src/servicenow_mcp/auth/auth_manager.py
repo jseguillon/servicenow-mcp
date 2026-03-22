@@ -4,12 +4,11 @@ Authentication manager for the ServiceNow MCP server.
 
 import base64
 import logging
-import os
 from typing import Dict, Optional
 
 import requests
-from requests.auth import HTTPBasicAuth
 
+from servicenow_mcp.auth.request_context import get_forwarded_auth_header
 from servicenow_mcp.utils.config import AuthConfig, AuthType
 
 
@@ -68,6 +67,15 @@ class AuthManager:
                 raise ValueError("API key configuration is required")
             
             headers[self.config.api_key.header_name] = self.config.api_key.api_key
+
+        elif self.config.type == AuthType.BEARER:
+            forwarded_header = get_forwarded_auth_header()
+            if not forwarded_header:
+                raise ValueError(
+                    "Bearer auth requires an incoming MCP Authorization header to forward"
+                )
+
+            headers["Authorization"] = forwarded_header
         
         return headers
     

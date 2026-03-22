@@ -17,6 +17,7 @@ def test_auth_type_enum():
     assert AuthType.BASIC == "basic"
     assert AuthType.OAUTH == "oauth"
     assert AuthType.API_KEY == "api_key"
+    assert AuthType.BEARER == "bearer"
 
 
 def test_basic_auth_config():
@@ -100,6 +101,13 @@ def test_auth_config():
     assert config.api_key.api_key == "api_key"
     assert config.basic is None
     assert config.oauth is None
+
+    # Bearer (forward incoming MCP Authorization header)
+    config = AuthConfig(type=AuthType.BEARER)
+    assert config.type == AuthType.BEARER
+    assert config.basic is None
+    assert config.oauth is None
+    assert config.api_key is None
 
 
 def test_server_config():
