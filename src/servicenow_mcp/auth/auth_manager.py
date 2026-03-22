@@ -8,6 +8,7 @@ from typing import Dict, Optional
 
 import requests
 
+from servicenow_mcp.auth.request_context import get_forwarded_auth_header
 from servicenow_mcp.utils.config import AuthConfig, AuthType
 
 
@@ -68,10 +69,13 @@ class AuthManager:
             headers[self.config.api_key.header_name] = self.config.api_key.api_key
 
         elif self.config.type == AuthType.BEARER:
-            if not self.config.bearer:
-                raise ValueError("Bearer auth configuration is required")
+            forwarded_header = get_forwarded_auth_header()
+            if not forwarded_header:
+                raise ValueError(
+                    "Bearer auth requires an incoming MCP Authorization header to forward"
+                )
 
-            headers["Authorization"] = f"{self.config.bearer.scheme} {self.config.bearer.token}"
+            headers["Authorization"] = forwarded_header
         
         return headers
     

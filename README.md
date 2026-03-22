@@ -599,14 +599,13 @@ SERVICENOW_API_KEY=your-api-key
 
 ### Bearer Authentication
 
-Use this when an upstream gateway such as Apigee expects a pre-issued JWT/bearer token instead of ServiceNow username/password credentials. The token is forwarded as-is on every REST API call.
+Use this when an upstream gateway such as Apigee sends an `Authorization` header on the incoming MCP HTTP request and you want the server to forward that same header to ServiceNow on REST API calls.
 
 ```
 SERVICENOW_AUTH_TYPE=bearer
-SERVICENOW_BEARER_TOKEN=your-jwt-or-access-token
-# Optional, defaults to Bearer
-SERVICENOW_BEARER_SCHEME=Bearer
 ```
+
+In this mode, the server does **not** read a bearer token from environment variables. Instead, it forwards the `Authorization` header received on the MCP SSE/message request. If no incoming header is present, bearer-authenticated tool calls fail.
 
 > Note: `run_background_script` still requires basic authentication because it performs an interactive UI login flow against `login.do`.
 

@@ -7,7 +7,6 @@ from servicenow_mcp.utils.config import (
     AuthConfig,
     AuthType,
     BasicAuthConfig,
-    BearerAuthConfig,
     OAuthConfig,
     ServerConfig,
 )
@@ -18,7 +17,6 @@ __all__ = [
     "AuthConfig",
     "AuthType",
     "BasicAuthConfig",
-    "BearerAuthConfig",
     "OAuthConfig",
     "ServerConfig",
     "parse_snow_bool",

@@ -11,12 +11,12 @@ from typing import Dict, Union
 import uvicorn
 from dotenv import load_dotenv
 from mcp.server import Server
-from mcp.server.fastmcp import FastMCP
 from mcp.server.sse import SseServerTransport
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.routing import Mount, Route
 
+from servicenow_mcp.auth.request_context import forwarded_auth_header
 from servicenow_mcp.server import ServiceNowMCP
 from servicenow_mcp.utils.config import AuthConfig, AuthType, BasicAuthConfig, ServerConfig
 
@@ -26,22 +26,29 @@ def create_starlette_app(mcp_server: Server, *, debug: bool = False) -> Starlett
     sse = SseServerTransport("/messages/")
 
     async def handle_sse(request: Request) -> None:
-        async with sse.connect_sse(
-            request.scope,
-            request.receive,
-            request._send,  # noqa: SLF001
-        ) as (read_stream, write_stream):
-            await mcp_server.run(
-                read_stream,
-                write_stream,
-                mcp_server.create_initialization_options(),
-            )
+        incoming_auth = request.headers.get("authorization")
+        with forwarded_auth_header(incoming_auth):
+            async with sse.connect_sse(
+                request.scope,
+                request.receive,
+                request._send,  # noqa: SLF001
+            ) as (read_stream, write_stream):
+                await mcp_server.run(
+                    read_stream,
+                    write_stream,
+                    mcp_server.create_initialization_options(),
+                )
+
+    async def handle_messages(scope, receive, send) -> None:
+        headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
+        with forwarded_auth_header(headers.get("authorization")):
+            await sse.handle_post_message(scope, receive, send)
 
     return Starlette(
         debug=debug,
         routes=[
             Route("/sse", endpoint=handle_sse),
-            Mount("/messages/", app=sse.handle_post_message),
+            Mount("/messages/", app=handle_messages),
         ],
     )
 
